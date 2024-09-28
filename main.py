@@ -1,10 +1,15 @@
 import requests
 import ssl
-from requests.adapters import HTTPAdapter
-from urllib3.poolmanager import PoolManager
 import time
 import json
+import dotenv
+import os
+from requests.adapters import HTTPAdapter
+from bluelink import Bluelink
 
+dotenv.load_dotenv() # load env vars from .env
+
+# !-----  grabbed off internet, to fix legacy ssl problem with mybluelink.ca ------!
 class SSLAdapter(HTTPAdapter):
     def init_poolmanager(self, *args, **kwargs):
         context = ssl.create_default_context()
@@ -13,39 +18,31 @@ class SSLAdapter(HTTPAdapter):
         kwargs['ssl_context'] = context
         return super().init_poolmanager(*args, **kwargs)
 
-# Create a session and mount the adapter
-session = requests.Session()
-session.mount('https://', SSLAdapter())
+''' vehicle controls '''
+class Vehicle():
+    def __init__(self, vehicleNickName: str, vehicleID: str, selected: bool, bluelinkSession: Bluelink):
+        self.vehicleNickName = vehicleNickName
+        self.vehicleID = vehicleID
+        self.selected = selected
+        self.bluelink = bluelinkSession
+    
+    def __str__(self) -> str:
+        return f'{self.vehicleNickName}: {self.vehicleID}: {self.selected}'
+    
+    # def lock(self) -> bool:
+    #     headers = {
+    #         'Accesstoken' = self.bluelink.accessToken,
+    #         'Vehicleid'
+    #     }
 
-# Try to make the request
-response = session.get('https://mybluelink.ca/login')
+    #     self.bluelink.post(url='')
 
-headers = {
-    'Host': 'mybluelink.ca',
-    'Origin': 'https://mybluelink.ca',
-    'Referer': 'https://mybluelink.ca/login',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-origin',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 OPR/112.0.0.0',
-    'content-type': 'application/json;charset=UTF-8',
-    'From': 'CWP',
-    'Language': '0',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Encoding': 'gzip, deflate, br, zstd',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Pragma': 'no-cache',
-    'offset': '-4',
-}
+loginID = os.environ['loginID']
+password = os.environ['password']
 
-loginId = input('loginID: ')
-password = input('password: ')
+# create session for mybluelink
+session = Bluelink(loginID, password)
 
-payload = json.dumps({
-    'loginId': loginId, 
-    'password': password
-})
-response = session.post(url='https://mybluelink.ca/tods/api/v2/login', data=payload, headers=headers)
-print(response.content)
+session.close()
+
+
