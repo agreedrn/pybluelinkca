@@ -1,9 +1,10 @@
 import ssl
 import time
-from requests.adapters import HTTPAdapter
 import classes.bluelink as bluelink
+from requests.adapters import HTTPAdapter
+from typing import Literal
 
-# !-----  grabbed off internet, to fix legacy ssl problem with mybluelink.ca ------!
+# !-----  grabbed off internet, to fix legacy ssl problem with mybluelink.ca -----!
 class SSLAdapter(HTTPAdapter):
     def init_poolmanager(self, *args, **kwargs):
         context = ssl.create_default_context()
@@ -12,7 +13,7 @@ class SSLAdapter(HTTPAdapter):
         kwargs['ssl_context'] = context
         return super().init_poolmanager(*args, **kwargs)
 
-''' vehicle controls '''
+''' Vehicle information + functions for vehicle '''
 class Vehicle():
     def __init__(self, vehicleNickName: str, vehicleID: str, selected: bool, bluelinkSession: bluelink.Bluelink):
         self.vehicleNickName = vehicleNickName
@@ -23,11 +24,10 @@ class Vehicle():
     def __str__(self) -> str:
         return f'{self.vehicleNickName}: {self.vehicleID}: {self.selected}'
     
-    def lock(self, pin) -> bool:
-        print("Lock function started...")
-
+    """ Function to lock/unlock the vehicle with specified PIN """
+    def lockOrUnlock(self, pin: str, intent: Literal['LOCK', 'UNLOCK']) -> bool:
         referer = 'https://mybluelink.ca/remote/lock'
-        headers = {
+        headers = { 
             'Accesstoken': self.bluelink.accessToken,
             'Vehicleid': self.vehicleID,
             'Pauth': self.bluelink.verifyPIN(pin, referer),
@@ -38,17 +38,20 @@ class Vehicle():
             'pin': pin
         }
 
+        # Select right API endpoint depending on if locking or unlocking
+        endpoint = 'drulck' if intent == "UNLOCK" else 'drlck'
+
         # Send lock request
         transactionID = self.bluelink.post(
-            url='https://mybluelink.ca/tods/api/drlck',
+            url=f'https://mybluelink.ca/tods/api/{endpoint}',
             headers=headers,
             json=payload
-        ).headers.get('Transactionid')
-        headers['Transactionid'] = transactionID
+        ).headers.get('Transactionid') # watch for case
+        headers['Transactionid'] = transactionID # watch for case
         
-        # Poll for lock status
+        # Poll for lock status (every 11 seconds)
         while True:
-            print("Polling lock status...")  # Add logging for status polling
+            print("Polling lock status...")
             status_response = self.bluelink.post(
                 url='https://mybluelink.ca/tods/api/rmtsts',
                 headers=headers,
@@ -59,15 +62,12 @@ class Vehicle():
 
             # Check if the transaction is still ongoing
             if status['transaction']['apiStatusCode'] == 'null':
-                print("Lock transaction still in progress...")
+                print("Transaction still in progress...")
                 time.sleep(11)
                 continue
 
-            # Check if the door is locked and return True
-            if status['vehicle']['doorLock']:
-                print("Successfully locked.")  # Logging success
+            locking = False if intent == "UNLOCK" else True
+            # Check if the door is locked/unlocked (depending) and return True
+            if status['vehicle'][f'doorLock'] == locking:
+                print(f"Successfully {intent.lower()}ed.")
                 return True
-
-            # If door is not locked, break the loop and return False
-            print("Failed to lock.")  # Logging failure
-            return False

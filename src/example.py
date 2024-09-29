@@ -24,8 +24,8 @@ session.vehicles contains all vehicles in bluelink. Find one using session.vehic
 
 vehicle = session.selectedVehicle
 
-# locking the vehicle
-vehicle.lock(PIN)
+# unlocking the vehicle
+vehicle.lockOrUnlock(PIN, intent="LOCK")
 
 session.close() # make sure to end the session
 

@@ -15,4 +15,4 @@ DEFAULT_HEADERS = {
             'Connection': 'keep-alive',
             'Pragma': 'no-cache',
             'Offset': '-4',    
-        }
+}
