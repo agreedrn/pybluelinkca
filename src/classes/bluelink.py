@@ -13,7 +13,7 @@ class Bluelink(requests.Session):
 
         self.selectedVehicle = None
         self.accessToken = None
-        self.vehicles = None
+        self.vehicles = {}
 
         self.login(loginID, password)
     
@@ -68,8 +68,6 @@ class Bluelink(requests.Session):
                                     }).json()
         selectedVehicle = selectedVehicle['result']['selectedVehicle']['vehicle']['vehicleId']
 
-        self.vehicles = {}
-
         vehicles = self.post(url="https://mybluelink.ca/tods/api/vhcllst",
                              headers={
                                  'Accesstoken': self.accessToken,
@@ -80,7 +78,6 @@ class Bluelink(requests.Session):
         for vehicle in vehicles:
             nickname = vehicle['nickName'].lower()
             id = vehicle['vehicleId']
-            vehicleClass = ''
 
             if id == selectedVehicle:
                 vehicleClass = Vehicle(nickname, id, selected=True, bluelinkSession=self)
