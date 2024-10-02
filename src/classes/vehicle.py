@@ -22,10 +22,19 @@ class Vehicle():
         self.vehicleNickName = vehicleNickName
         self.vehicleID = vehicleID
         self.selected = selected
+        self.enginePresets = self.getEnginePresets()
         self.bluelink = bluelinkSession
     
     def __str__(self) -> str:
         return f'{self.vehicleNickName}: {self.vehicleID}: {self.selected}'
+
+    def checkDefaultPreset(self, raiseError=True):
+        if self.enginePresets.defaultPreset:
+            return True
+        elif raiseError:
+            raise RuntimeError('Your bluelink account does not contain a default preset.\nPlease either include a custom preset when calling this function, or set a default one in your bluelink account.')
+        else:
+            return False
     
     """ Function to get all status arguments of the vehicle. GET FUNC NOT FULLY BUILT*"""
     def pollOrGetStatus(self, intent: Literal['POLL', 'GET'], headers=None) -> VehicleStatus:
@@ -95,7 +104,7 @@ class Vehicle():
         presets = presets.json()['result']
 
         # Find presets + default preset
-        presetClasses = []
+        presetClasses = {}
         defaultClass = None
         for preset in presets:
             # Create a new copy of the preset, without id and settingName (prep for start engine func)
@@ -109,18 +118,16 @@ class Vehicle():
 
             if preset['defaultFavorite']:
                 defaultClass = CarSetting.from_dict(preset)
-            presetClasses.append(CarSetting.from_dict(preset))
+            presetClasses[preset['settingName']] = CarSetting.from_dict(preset)
         
         # Return preset class
         return CarSettings(presetClasses, defaultClass)
     
     def startEngine(self, pin, preset: CarSetting | None) -> bool:
-        # Grab default preset (if exists)
-        presets = self.getEnginePresets()
-        if presets.defaultPreset:
-            preset = presets.defaultPreset
-        else:
-            raise RuntimeError('Your bluelink account does not contain a default preset.\nPlease either include a custom preset when calling this function, or set a default one in your bluelink account.')
+        if preset == None:
+            # Raise error if no defualt preset in bluelink
+            self.checkDefaultPreset()
+            preset = self.enginePresets.defaultPreset
 
         referer = 'https://mybluelink.ca/remote/start'
 

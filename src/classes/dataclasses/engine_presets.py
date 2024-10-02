@@ -33,5 +33,5 @@ class CarSetting(JSONSerializable, metaclass=property_wizard):
 
 @dataclass
 class CarSettings():
-    presetClasses: list
+    presetClasses: dict
     defaultPreset: Optional[CarSetting] = None
