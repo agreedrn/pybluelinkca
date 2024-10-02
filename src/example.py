@@ -14,7 +14,7 @@ session = Bluelink(LOGIN_ID, PASSWORD)
 
 """
 session.selectedVehicle contains your default vehicle in bluelink
-    - Available functions include: lock(PIN), unlock(PIN), etc.
+    - Available functions include: lockOrUnlock(PIN), etc
     - e.g. session.selectedVehicle.lock(PIN)
 session.vehicles contains all vehicles in bluelink. Find one using session.vehicles[VEHICLE_NICKNAME]
     - Available functions are the same after one vehicle is defined.
@@ -24,8 +24,19 @@ session.vehicles contains all vehicles in bluelink. Find one using session.vehic
 
 vehicle = session.selectedVehicle
 
-# unlocking the vehicle
-vehicle.lockOrUnlock(PIN, intent="LOCK")
+# Locking the vehicle
+locked = vehicle.lockOrUnlock(PIN, intent="LOCK")
+
+# Check if locking function returned True, if lock suceeded.
+if locked:
+    print(f"{vehicle.vehicleNickName} successfully locked.")
+
+engine_presets = vehicle.getEnginePresets()
+
+print(repr(engine_presets))
+print()
+print()
+print(engine_presets.defaultPreset.setting_json)
 
 session.close() # make sure to end the session
 

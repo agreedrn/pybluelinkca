@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from dataclass_wizard import DataClassJSONMixin
+from dataclass_wizard import JSONSerializable, property_wizard
 from typing import Optional
 
 
 @dataclass
-class ApiTransaction(DataClassJSONMixin):
+class ApiTransaction(JSONSerializable, metaclass=property_wizard):
     apiCode: str
     apiStartDate: str
     apiEndDate: str
@@ -13,7 +13,7 @@ class ApiTransaction(DataClassJSONMixin):
 
 
 @dataclass
-class DoorOpenStatus(DataClassJSONMixin):
+class DoorOpenStatus(JSONSerializable, metaclass=property_wizard):
     frontLeft: int
     frontRight: int
     backLeft: int
@@ -21,32 +21,34 @@ class DoorOpenStatus(DataClassJSONMixin):
 
 
 @dataclass
-class AirTemp(DataClassJSONMixin):
+class AirTemp(JSONSerializable, metaclass=property_wizard):
     value: str
     unit: int
 
 
 @dataclass
-class DistanceToEmpty(DataClassJSONMixin):
+class DistanceToEmpty(JSONSerializable, metaclass=property_wizard):
     value: float
     unit: int
 
 
 @dataclass
-class TirePressureLamp(DataClassJSONMixin):
+class TirePressureLamp(JSONSerializable, metaclass=property_wizard):
     tirePressureLampAll: int
 
+@dataclass
+class BatSignalReferenceValue:
+    batWarning: int
 
 @dataclass
-class Battery(DataClassJSONMixin):
+class Battery(JSONSerializable, metaclass=property_wizard):
     batSoc: int
     sjbDeliveryMode: int
-    batWarning: int
+    batSignalReferenceValue: BatSignalReferenceValue
     powerAutoCutMode: int
 
-
 @dataclass
-class SeatHeaterVentInfo(DataClassJSONMixin):
+class SeatHeaterVentInfo(JSONSerializable, metaclass=property_wizard):
     drvSeatHeatState: int
     astSeatHeatState: int
     rlSeatHeatState: int
@@ -54,7 +56,7 @@ class SeatHeaterVentInfo(DataClassJSONMixin):
 
 
 @dataclass
-class HeadLampStatus(DataClassJSONMixin):
+class HeadLampStatus(JSONSerializable, metaclass=property_wizard):
     headLampStatus: bool
     leftLowLamp: bool
     rightLowLamp: bool
@@ -65,13 +67,13 @@ class HeadLampStatus(DataClassJSONMixin):
 
 
 @dataclass
-class StopLampStatus(DataClassJSONMixin):
+class StopLampStatus(JSONSerializable, metaclass=property_wizard):
     leftLamp: bool
     rightLamp: bool
 
 
 @dataclass
-class TurnSignalLampStatus(DataClassJSONMixin):
+class TurnSignalLampStatus(JSONSerializable, metaclass=property_wizard):
     leftFrontLamp: bool
     rightFrontLamp: bool
     leftRearLamp: bool
@@ -79,14 +81,14 @@ class TurnSignalLampStatus(DataClassJSONMixin):
 
 
 @dataclass
-class LampWireStatus(DataClassJSONMixin):
+class LampWireStatus(JSONSerializable, metaclass=property_wizard):
     headLamp: HeadLampStatus
     stopLamp: StopLampStatus
     turnSignalLamp: TurnSignalLampStatus
 
 
 @dataclass
-class Vehicle(DataClassJSONMixin):
+class VehicleStatus(JSONSerializable, metaclass=property_wizard):
     lastStatusDate: str
     airCtrlOn: bool
     engine: bool
@@ -107,29 +109,28 @@ class Vehicle(DataClassJSONMixin):
     seatHeaterVentInfo: SeatHeaterVentInfo
     sleepModeCheck: bool
     lampWireStatus: LampWireStatus
-    windowOpen: Optional[dict]
     smartKeyBatteryWarning: bool
     fuelLevel: int
     washerFluidStatus: bool
     breakOilStatus: bool
     engineOilStatus: bool
-    engineRuntime: Optional[dict]
+    engineRuntime: Optional[dict] = None
+    windowOpen: Optional[dict] = None
 
 
 @dataclass
-class ResponseHeader(DataClassJSONMixin):
+class ResponseHeader(JSONSerializable, metaclass=property_wizard):
     responseCode: int
     responseDesc: str
 
 
 @dataclass
-class Result(DataClassJSONMixin):
+class Result(JSONSerializable, metaclass=property_wizard):
     transaction: ApiTransaction
-    vehicle: Vehicle
-
+    vehicle: VehicleStatus
 
 @dataclass
-class ApiResponse(DataClassJSONMixin):
+class ApiResponse(JSONSerializable, metaclass=property_wizard):
     responseHeader: ResponseHeader
     result: Result
 
