@@ -103,6 +103,5 @@ class Bluelink(requests.Session):
             self.vehicles[nickname] = Vehicle(nickname, id, selected=False, bluelinkSession=self)
     
     def vehicleGet(self, nickname: str) -> classcopies.Vehicle | None:
-        from .vehicle import Vehicle
         return self.vehicles.get(nickname)
         

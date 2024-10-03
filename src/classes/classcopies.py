@@ -1,7 +1,15 @@
+"""
+IMPORTANT ***
+
+ANY CLASSES IN THIS FILE ARE NOT MEANT TO BE USED.
+
+THESE CLASSES DO NOT WORK, AND ARE ONLY THERE FOR VS CODE HIGHLIGHTING
+"""
+
+
 import ssl
 import time
 import copy
-from . import bluelink
 from requests.adapters import HTTPAdapter
 from typing import Literal
 from .dataclasses.vehicle_status import ApiResponse, VehicleStatus
@@ -18,11 +26,11 @@ class SSLAdapter(HTTPAdapter):
 
 ''' Vehicle information + functions for vehicle '''
 class Vehicle():
-    def __init__(self, vehicleNickName: str, vehicleID: str, selected: bool, bluelinkSession: bluelink.Bluelink):
+    def __init__(self, vehicleNickName: str, vehicleID: str, selected: bool):
         self.vehicleNickName = vehicleNickName
         self.vehicleID = vehicleID
         self.selected = selected
-        self.bluelink = bluelinkSession
+        # self.bluelink = bluelinkSession
         self.enginePresets = self.getEnginePresets()
     
     def __str__(self) -> str:
