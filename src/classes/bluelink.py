@@ -1,10 +1,11 @@
 import requests
+from . import classcopies
 
 """ Base session for Bluelink """
 class Bluelink(requests.Session):
     def __init__(self, loginID, password, refreshAccessToken=True):
-        from classes.vehicle import SSLAdapter
-        from headers.default_headers import DEFAULT_HEADERS
+        from .vehicle import SSLAdapter
+        from .headers.default_headers import DEFAULT_HEADERS
 
         super().__init__()
         self.mount('https://', SSLAdapter()) # enable legacy ssl
@@ -67,7 +68,7 @@ class Bluelink(requests.Session):
     
     """ Get all vehicles + selected vehicle, and create all Vehicle classes """
     def createVehicles(self) -> bool:
-        from classes.vehicle import Vehicle
+        from .vehicle import Vehicle
 
         # Grab default/selected vehicle
         selectedVehicle = self.post(
@@ -100,3 +101,8 @@ class Bluelink(requests.Session):
             nickname = vehicle['nickName'].lower()
             id = vehicle['vehicleId']
             self.vehicles[nickname] = Vehicle(nickname, id, selected=False, bluelinkSession=self)
+    
+    def vehicleGet(self, nickname: str) -> classcopies.Vehicle | None:
+        from .vehicle import Vehicle
+        return self.vehicles.get(nickname)
+        
