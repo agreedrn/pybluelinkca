@@ -36,7 +36,7 @@ class Vehicle():
     def __str__(self) -> str:
         return f'{self.vehicleNickName}: {self.vehicleID}: {self.selected}'
 
-    def checkDefaultPreset(self, raiseError=True):
+    def _checkDefaultPreset(self, raiseError=True):
         if self.enginePresets.defaultPreset:
             return True
         elif raiseError:
@@ -44,15 +44,9 @@ class Vehicle():
         else:
             return False
     
-    """ Function to get all status arguments of the vehicle. GET FUNC NOT FULLY BUILT*"""
-    def pollOrGetStatus(self, intent: Literal['POLL', 'GET'], headers=None) -> VehicleStatus:
-        if intent == 'POLL':
-            endpoint = 'rmsts'
-        elif intent == 'GET':
-            endpoint = ''
-            headers = {}
-        
-        # Poll for status (every 11 seconds)
+    """ Function to poll for status of vehicle after API request to do something"""
+    def _pollStatus(self, headers: dict) -> VehicleStatus:
+        # Poll for status (every 2 seconds)
         while True:
             # Grab the status of the API request
             status_response = self.bluelink.post(
@@ -63,12 +57,31 @@ class Vehicle():
 
             # Check if the transaction is still ongoing
             if status['result']['transaction']['apiStatusCode'] == 'null':
-                time.sleep(11)
+                time.sleep(2)
                 continue
             elif status['result']['transaction']['apiStatusCode']== '200':
                 status = ApiResponse.from_dict(status)
                 return status.result.vehicle
-    
+
+    """ Function to get status of vehicle (reference dataclasses in vehicle_status.py | VehicleStatus)"""
+    def getStatus(self) -> VehicleStatus:
+        # Define headers to send
+        headers = {
+            'Accesstoken': self.bluelink.accessToken,
+            'Referer': 'https://mybluelink.ca/login',
+            'Vehicleid': self.vehicleID
+        }
+
+        # Grab the status of the car
+        status_response = self.bluelink.post(
+            url='https://mybluelink.ca/tods/api/lstvhclsts',
+            headers=headers,
+        )
+        status = status_response.json()
+
+        if status['responseHeader']['responseDesc'] == 'Success':
+            return VehicleStatus.from_dict(status['result']['status'])
+
     """ Function to lock/unlock the vehicle with specified PIN """
     def lockOrUnlock(self, pin: str, intent: Literal['LOCK', 'UNLOCK']) -> bool:
         referer = 'https://mybluelink.ca/remote/lock'
@@ -92,7 +105,7 @@ class Vehicle():
         headers['Transactionid'] = transactionID # watch for case
 
         # Poll for status of car after API req. completed
-        status = self.pollOrGetStatus(intent='POLL', headers=headers)
+        status = self._pollStatus(headers=headers)
 
         # Confirm if API did its job, and end func (check if door is unlocked/locked)
         locking = False if intent == "UNLOCK" else True
@@ -122,8 +135,6 @@ class Vehicle():
 
             preset['setting_json'] = new_preset
 
-            print(preset)
-
             if preset['defaultFavorite']:
                 defaultClass = CarSetting.from_dict(preset)
             presetClasses[preset['settingName']] = CarSetting.from_dict(preset)
@@ -134,7 +145,7 @@ class Vehicle():
     def startEngine(self, pin, preset: CarSetting | None) -> bool:
         if preset == None:
             # Raise error if no defualt preset in bluelink
-            self.checkDefaultPreset()
+            self._checkDefaultPreset()
             preset = self.enginePresets.defaultPreset
 
         referer = 'https://mybluelink.ca/remote/start'
@@ -143,7 +154,8 @@ class Vehicle():
         headers = {
             'Accesstoken': self.bluelink.accessToken,
             'Pauth': self.bluelink.verifyPIN(pin, referer),
-            'Vehicleid': self.vehicleID
+            'Vehicleid': self.vehicleID,
+            'Referer': referer
         }
 
         # Payload
@@ -161,8 +173,36 @@ class Vehicle():
         headers['Transactionid'] = transactionID # watch for case
 
         # Poll for start request status
-        status = self.pollOrGetStatus(intent='POLL', headers=headers)
+        status = self._pollStatus(headers=headers)
 
         # Quick check if engine is on and API did its job
         if status.engine:
+            return True
+    
+    def reverseRemoteEngineStart(self, pin) -> bool:
+        # Headers
+        referer = 'https://mybluelink.ca/remote/start'
+        headers = {
+            'Referer': referer,
+            'Accesstoken': self.bluelink.accessToken,
+            'Pauth': self.bluelink.verifyPIN(pin, referer),
+            'Vehicleid': self.vehicleID
+        }
+
+        # Payload
+        payload = {'pin': pin}
+
+        # Send API Request
+        transactionID = self.bluelink.post(
+            url='https://mybluelink.ca/tods/api/rmtstp',
+            headers=headers,
+            json=payload
+        ).headers.get('Transactionid') # watch for case
+        headers['Transactionid'] = transactionID # watch for case
+
+        # Poll for stop request status
+        status = self._pollStatus(headers=headers)
+
+        # Quick check if engine is off and API did its job
+        if status.engine == False:
             return True

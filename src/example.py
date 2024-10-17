@@ -1,10 +1,9 @@
 import os
-from .classes.bluelink import Bluelink
-from .classes.vehicle import Vehicle
-import dotenv
+from dotenv import load_dotenv
+from classes.bluelink import Bluelink
 
 # Define login_id, password, and your pin to use through your method of choosing
-dotenv.load_dotenv()
+load_dotenv()
 
 LOGIN_ID = os.environ['loginID']
 PASSWORD = os.environ['password']
@@ -38,7 +37,11 @@ locked = vehicle.lockOrUnlock(PIN, intent="LOCK")
 if locked:
     print(f"{vehicle.vehicleNickName} successfully locked.")
 
-session.close() # make sure to end the session
+# Checking vehicle status (printing fuelLevel)
+status = vehicle.getStatus()
+print(f'{status.fuelLevel}%')
+
+session.close() # *make sure to end the session*
 
 
 
