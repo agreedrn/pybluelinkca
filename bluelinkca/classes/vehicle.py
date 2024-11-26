@@ -134,7 +134,7 @@ class Vehicle():
         # Return preset class
         return CarSettings(presetClasses, defaultClass)
     
-    def startEngine(self, pin, preset: CarSetting | None) -> bool:
+    def startEngine(self, pin, preset: CarSetting | None = None) -> bool:
         if preset == None:
             # Raise error if no defualt preset in bluelink
             self._checkDefaultPreset()

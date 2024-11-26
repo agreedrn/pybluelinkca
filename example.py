@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from bluelinkca import Bluelink
+import time
 
 # Define login_id, password, and your pin to use through your method of choosing
 load_dotenv()
@@ -30,16 +31,21 @@ session.vehicleGet(nickname) allows you to get a certain vehicle in your bluelin
 # Select the vehicle
 vehicle = session.vehicleGet('elantra')
 
-# Locking the vehicle
-locked = vehicle.lockOrUnlock(PIN, intent="LOCK")
+# # Locking the vehicle
+# locked = vehicle.lockOrUnlock(PIN, intent="LOCK")
 
-# Check if locking function returned True, if lock suceeded.
-if locked:
-    print(f"{vehicle.vehicleNickName} successfully locked.")
+# # Check if locking function returned True, if lock suceeded.
+# if locked:
+#     print(f"{vehicle.vehicleNickName} successfully locked.")
+
+started = vehicle.startEngine(PIN)
+time.sleep(5)
+vehicle.reverseRemoteEngineStart(PIN)
 
 # Checking vehicle status (printing fuelLevel)
 status = vehicle.getStatus()
 print(f'{status.fuelLevel}%')
+print(status)
 
 session.close() # *make sure to end the session*
 
