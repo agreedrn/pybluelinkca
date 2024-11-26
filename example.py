@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from classes.bluelink import Bluelink
+from bluelinkca import Bluelink
 
 # Define login_id, password, and your pin to use through your method of choosing
 load_dotenv()

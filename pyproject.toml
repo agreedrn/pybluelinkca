@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bluelinkca"
+version = "0.0.1"
+authors = [
+  { name="Rishi Nachnani", email="rishinachnani@hotmail.com" },
+]
+description = "An unoffical wrapper for Hyundai Bluelink Canada, to lock/unlock/remote start cars, and grab their status."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests",
+    "dataclass_wizard"
+]
+
+[project.urls]
+Homepage = "https://github.com/agreedrn/pybluelinkca"
+Documentation = "https://github.com/agreedrn/pybluelinkca/blob/main/README.md"
+Issues = "https://github.com/agreedrn/pybluelinkca/issues"

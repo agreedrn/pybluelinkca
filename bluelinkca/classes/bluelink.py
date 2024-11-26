@@ -46,11 +46,11 @@ class Bluelink(requests.Session):
     
     """ Get Pauth from correct pin, for API """
     def verifyPIN(self, pin: str, referer: str) -> str:
-        cookie = self.cookies.get_dict()['dtCookie']
+        #cookie = self.cookies.get_dict()['dtCookie']
         headers = {
             'accessToken': self.accessToken,
             'Referer': referer,
-            'Cookie': f'dtcookie={cookie};'
+            #'Cookie': f'dtcookie={cookie};'
         }
 
         payload = {'pin': pin}
