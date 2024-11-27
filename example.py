@@ -38,13 +38,13 @@ vehicle = session.vehicleGet('elantra')
 # if locked:
 #     print(f"{vehicle.vehicleNickName} successfully locked.")
 
-started = vehicle.startEngine(PIN)
-time.sleep(5)
-vehicle.reverseRemoteEngineStart(PIN)
+# started = vehicle.startEngine(PIN)
+# time.sleep(5)
+# vehicle.reverseRemoteEngineStart(PIN)
 
-# Checking vehicle status (printing fuelLevel)
+# Checking vehicle status (printing distance to empty gas tank)
 status = vehicle.getStatus()
-print(f'{status.fuelLevel}%')
+print(f'{status.dte.value} km')
 print(status)
 
 session.close() # *make sure to end the session*
